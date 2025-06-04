@@ -48,10 +48,33 @@
             }
         }
 
-        // Esta función debería conectarse con tu modelo de ML en el backend
-        function clasificarImagen() {
+        async function clasificarImagen() {
+            const input = document.getElementById('imageInput');
             const resultado = document.getElementById('resultado');
-            resultado.textContent = 'Clasificando... (aquí deberías llamar a tu API)';
+
+            if (!input.files || !input.files[0]) {
+                resultado.textContent = 'Primero selecciona una imagen';
+                return;
+            }
+
+            const data = new FormData();
+            data.append('image', input.files[0]);
+
+            resultado.textContent = 'Clasificando...';
+            try {
+                const resp = await fetch('http://localhost:5000/predict', {
+                    method: 'POST',
+                    body: data
+                });
+                const json = await resp.json();
+                if (resp.ok) {
+                    resultado.textContent = `Resultado: ${json.label} (confianza: ${json.confidence.toFixed(2)})`;
+                } else {
+                    resultado.textContent = json.error || 'Error en la predicción';
+                }
+            } catch (err) {
+                resultado.textContent = 'No se pudo conectar con el servidor';
+            }
         }
     </script>
 </body>
